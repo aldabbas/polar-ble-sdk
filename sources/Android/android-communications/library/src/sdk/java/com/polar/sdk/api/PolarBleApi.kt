@@ -84,6 +84,11 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
          * Feature to receive sleep data from Polar device.
          */
         FEATURE_POLAR_SLEEP_DATA
+
+        /* 
+         * Configurations and Settings for supported Polar devices
+         */
+         FEATURE_POLAR_PFC
     }
 
     /**
@@ -376,4 +381,20 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      */
     abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
 
+     
+     /** Get Multiconnection state from device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Single] which emits [Boolean]
+     */
+    abstract fun isMultiConnection(identifier: String): Single<Boolean> 
+    
+    /**
+     * Set Multiconnection state.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param flag to enable or disable multiconnection
+     * @return Completable stream
+     */
+    abstract fun setMultiConnection(identifier: String, enabled: Boolean): Completable
 }

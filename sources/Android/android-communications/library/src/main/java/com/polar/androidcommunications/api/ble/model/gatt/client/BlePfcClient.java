@@ -270,7 +270,7 @@ public class BlePfcClient extends BleGattBase {
                     emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PFC control point not enabled"));
                 }
             }
-        }).subscribeOn(scheduler);
+        }).subscribeOn(Schedulers.io());
     }
 
     /**

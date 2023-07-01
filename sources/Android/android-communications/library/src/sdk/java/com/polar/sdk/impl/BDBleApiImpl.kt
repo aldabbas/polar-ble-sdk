@@ -24,6 +24,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpResponseError
+import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
 import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingData
 import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingUtility.mapOfflineRecordingFileNameToMeasurementType
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility
@@ -157,6 +158,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA -> clients.add(BlePsFtpClient::class.java)
+                PolarBleSdkFeature.FEATURE_POLAR_PFC -> clients.add(BlePfcClient::class.java)
             }
         }
 
@@ -301,6 +303,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
                 PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA -> {
                     sessionPsFtpClientReady(deviceId)
+                    true
+                }
+                PolarBleSdkFeature.FEATURE_POLAR_PFC -> {
+                    sessionPfcClientReady(deviceId)
                     true
                 }
             }
@@ -1867,6 +1873,36 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    override fun isMultiConnection(identifier: String): Single<Boolean> {
+        val session = try {
+            sessionPfcClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePfcClient.PFC_SERVICE) as BlePfcClient? ?: return Single.error(PolarServiceNotAvailable())
+
+        BleLogger.d(TAG, "get multi connection state")
+        return client.sendControlPointCommand(BlePfcClient.PfcMessage.PFC_REQUEST_MULTI_CONNECTION_SETTING, null)
+            .map {
+                it.getPayload()[0] != 0.toByte()
+            }.onErrorResumeNext {
+                Single.error(it)
+            }
+    }
+
+    override fun setMultiConnection(identifier: String, enabled: Boolean): Completable {
+        val session = try {
+            sessionPfcClientReady(identifier)
+        } catch (error: Throwable) {
+            return Completable.error(error)
+        }
+        val client = session.fetchClient(BlePfcClient.PFC_SERVICE) as BlePfcClient? ?: return Completable.error(PolarServiceNotAvailable())
+        val data = if (enabled) 1 else 0
+        BleLogger.d(TAG, "set MultiConnecto ${data}}")
+        return client.sendControlPointCommand(BlePfcClient.PfcMessage.PFC_CONFIGURE_MULTI_CONNECTION_SETTING, data)
+            .ignoreElement()
+    }
+
     override fun getAvailableOfflineRecordingDataTypes(identifier: String): Single<Set<PolarDeviceDataType>> {
         val session = try {
             sessionPmdClientReady(identifier)
@@ -2922,6 +2958,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     }
 
+    @Throws(Throwable::class)
+    protected fun sessionPfcClientReady(identifier: String): BleDeviceSession {
+        val session = sessionServiceReady(identifier, BlePfcClient.PFC_SERVICE)
+        val client = session.fetchClient(BlePfcClient.PFC_SERVICE) as BlePfcClient? ?: throw PolarServiceNotAvailable()
+        val pair = client.getNotificationAtomicInteger(BlePfcClient.PFC_CP)
+        if (pair != null && pair.get() == BleGattBase.ATT_SUCCESS) {
+            return session
+        }
+        throw PolarNotificationNotEnabled()
+    }
+
     private fun stopPmdStreaming(session: BleDeviceSession, client: BlePMDClient, type: PmdMeasurementType) {
         if (session.sessionState == DeviceSessionState.SESSION_OPEN) {
             // stop streaming
@@ -3131,6 +3178,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA -> isActivityDataFeatureAvailable(discoveredServices, session)
 
             PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA -> isActivityDataFeatureAvailable(discoveredServices, session)
+            PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> isLedAnimationFeatureAvailable(discoveredServices, session)
+            PolarBleSdkFeature.FEATURE_POLAR_PFC -> isMultiConnectionFeatureAvailable(discoveredServices, session)
         }
 
         return isFeatureAvailable.flatMapCompletable {
@@ -3237,6 +3286,21 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             ).toSingle {
                 return@toSingle true
             }
+        } else {
+            Single.just(false)
+        }
+    }
+
+    private fun isMultiConnectionFeatureAvailable(discoveredServices: List<UUID>, session: BleDeviceSession): Single<Boolean> {
+        return if (discoveredServices.contains(BlePfcClient.PFC_SERVICE)) {
+            val blePfcClient = session.fetchClient(BlePfcClient.PFC_SERVICE) as BlePfcClient? ?: return Single.just(false)
+            blePfcClient.clientReady(true)
+                .andThen(
+                    blePfcClient.readFeature()
+                        .map { pfcFeatures ->
+                            pfcFeatures.multiConnectionSupported
+                        }
+                )
         } else {
             Single.just(false)
         }
