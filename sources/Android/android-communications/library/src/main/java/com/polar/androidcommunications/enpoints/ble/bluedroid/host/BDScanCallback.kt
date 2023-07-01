@@ -13,6 +13,7 @@ import android.os.ParcelUuid
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
+import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
 import com.polar.androidcommunications.common.ble.AndroidBuildUtils.Companion.getBuildVersion
 import com.polar.androidcommunications.common.ble.BleUtils.EVENT_TYPE
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -44,6 +45,7 @@ internal class BDScanCallback(
         val defaultFilter: MutableList<ScanFilter> = ArrayList()
         defaultFilter.add(ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(BleHrClient.HR_SERVICE.toString())).build())
         defaultFilter.add(ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(BlePsFtpUtils.RFC77_PFTP_SERVICE.toString())).build())
+        defaultFilter.add(ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(BlePfcClient.PFC_SERVICE.toString())).build())
         defaultFilter.add(ScanFilter.Builder().setManufacturerData(POLAR_MANUFACTURER_ID, byteArrayOf()).build())
         this.scanFilter = defaultFilter
     }

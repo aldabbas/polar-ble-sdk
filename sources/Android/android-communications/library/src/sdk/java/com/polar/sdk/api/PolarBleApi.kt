@@ -65,7 +65,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to enable or disable SDK mode blinking LED animation.
          */
-        FEATURE_POLAR_LED_ANIMATION
+        FEATURE_POLAR_LED_ANIMATION,
+
+        /**
+         * Configurations and Settings for supported Polar devices
+         */
+         FEATURE_POLAR_PFC
     }
 
     /**
@@ -262,4 +267,20 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun doFactoryReset(identifier: String, preservePairingInformation: Boolean): Completable
+     
+     /** Get Multiconnection state from device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Single] which emits [Boolean]
+     */
+    abstract fun isMultiConnection(identifier: String): Single<Boolean> 
+    
+    /**
+     * Set Multiconnection state.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param flag to enable or disable multiconnection
+     * @return Completable stream
+     */
+    abstract fun setMultiConnection(identifier: String, enabled: Boolean): Completable
 }
