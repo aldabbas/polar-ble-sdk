@@ -442,6 +442,8 @@ import UIKit
             isFeatureAvailable = isSdkModeFeatureAvailable(session, discoveredServices)
         case .feature_polar_led_animation:
             isFeatureAvailable = isLedAnimationFeatureAvailable(session, discoveredServices)
+        case .feature_polar_pfc:
+            isFeatureAvailable = isPfcFeatureAvailable(session, discoveredServices)
         }
         
         return isFeatureAvailable.flatMapCompletable { (isReady: Bool) -> Completable in
@@ -761,6 +763,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                 // do nothing
             }
         }
+        case .feature_polar_pfc:
+            do {
+                _ = try sessionPfcClientReady(identifier)
+                return true
+            } catch {
+                // do nothing
+            }
         
         return false
     }

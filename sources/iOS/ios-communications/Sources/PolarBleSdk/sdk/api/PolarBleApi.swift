@@ -43,6 +43,9 @@ public enum PolarBleSdkFeature: CaseIterable {
 
     /// Feature to enable or disable SDK mode blinking LED animation.
     case feature_polar_led_animation
+
+    /// Feature to read and set device configuration in Polar device
+    case feature_polar_pfc
 }
 
 /// Polar device info
