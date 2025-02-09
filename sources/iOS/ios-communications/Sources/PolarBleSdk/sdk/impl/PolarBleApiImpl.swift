@@ -88,6 +88,11 @@ import UIKit
             //TODO, why this is needed?
             serviceList.append(CBUUID.init(string: "FEEE"))
         }
+
+        //BlePfcClient
+        if(features.contains(PolarBleSdkFeature.feature_polar_pfc)) {
+            clientList.append(BlePfcClient.init)
+        }
         
         self.queue = queue
         self.listener = CBDeviceListenerImpl(queue, clients: clientList, identifier: 0)
@@ -180,6 +185,15 @@ import UIKit
         let session = try sessionServiceReady(identifier, service: BlePsFtpClient.PSFTP_SERVICE)
         let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
         if client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
+            return session
+        }
+        throw PolarErrors.notificationNotEnabled
+    }
+
+    private func sessionPfcClientReady(_ identifier: String) throws -> BleDeviceSession {
+        let session = try sessionServiceReady(identifier, service: BlePfcClient.PFC_SERVICE)
+        let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as! BlePfcClient
+        if client.isCharacteristicNotificationEnabled(BlePfcClient.PFC_CP) {
             return session
         }
         throw PolarErrors.notificationNotEnabled
@@ -345,6 +359,18 @@ import UIKit
         }
     }
 
+    private func isPfcFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
+        if (discoveredServices.contains(BlePfcClient.PFC_SERVICE)) {
+            guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+                return Single.just(false)
+            }
+            return client.clientReady(true)
+                .andThen(Single.just(true))
+        } else {
+            return Single.just(false)
+        }
+    }
+
     private func isPolarDeviceTimeFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
         if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE)) {
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -469,6 +495,8 @@ import UIKit
             isFeatureAvailable = isSdkModeFeatureAvailable(session, discoveredServices)
         case .feature_polar_led_animation:
             isFeatureAvailable = isLedAnimationFeatureAvailable(session, discoveredServices)
+        case .feature_polar_pfc:
+            isFeatureAvailable = isPfcFeatureAvailable(session, discoveredServices)
         case .feature_polar_activity_data:
             isFeatureAvailable = isPolarActivityDataFeatureAvailable(session, discoveredServices)
         case .feature_polar_firmware_update:
@@ -802,6 +830,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                 _ = try sessionFtpClientReady(identifier)
                 return true
             } catch _ {
+                // do nothing
+            }
+        case .feature_polar_pfc:
+            do {
+                _ = try sessionPfcClientReady(identifier)
+                return true
+            } catch {
                 // do nothing
             }
         case .feature_polar_firmware_update:
@@ -2850,6 +2885,43 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
+    func isMultiConnection(_ identifier: String) -> Single<Bool> {
+        do {
+            let session = try self.sessionPfcClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+
+            let resp = try client.sendControlPointCommand(BlePfcClient.PfcMessage.pfcRequestMultiConnectionSetting, value: nil)
+            if resp.responseCode != 240 {
+                return Single.error(PolarErrors.polarBleSdkInternalException(description: resp.responseCode.description))
+            }
+            return (resp.payload[0] != 0) ? Single.just(true) : Single.just(false)
+        } catch {
+            return Single.error(error)
+        }
+    }
+
+    func setMultiConnection(_ identifier: String, enable: Bool) -> Completable {
+        do {
+            let session = try self.sessionPfcClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+            
+            var data = Data([UInt8](repeating: 0, count: 1))
+            data[0] = enable ? 1 : 0
+            let resp = try client.sendControlPointCommand(BlePfcClient.PfcMessage.pfcConfigureMultiConnection, value: data)
+            if resp.responseCode != 240 {
+                return Completable.error(PolarErrors.polarBleSdkInternalException(description: resp.responseCode.description))
+            }
+            return Completable.empty()
+                
+        } catch {
+            return Completable.error(error)
+        }
+    }
+
     private func deleteListedFilesByType(identifier: String, dataDeletionStats: DataDeletionStats, entryPath: String, until: Date, _ dataType: PolarStoredDataType.StoredDataType, condition: @escaping (_ p: String) -> Bool) -> Completable {
       
         listFiles(identifier: identifier, dataDeletionStats: dataDeletionStats, folderPath: entryPath, condition: condition)
@@ -3606,6 +3678,17 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(err)
         }
     }
+
+    func isMultiConnectionEnabled(_ identifier: String) -> Single<Bool> {
+            do {
+                let session = try sessionPfcClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else { return Single.error(PolarErrors.serviceNotFound) }
+                return client.isMultiConnectionEnabled()
+                    .map { $0 != PfcMultiConnectionMode.disabled }
+            } catch let err {
+                return Single.error(err)
+            }
+        }
 }
 
 extension String {

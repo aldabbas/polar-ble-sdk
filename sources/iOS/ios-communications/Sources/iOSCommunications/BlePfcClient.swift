@@ -66,7 +66,7 @@ public struct Pfc {
 public class BlePfcClient: BleGattClientBase{
     
     public static let PFC_SERVICE = CBUUID(string: "6217FF4B-FB31-1140-AD5A-A45545D7ECF3")
-    let PFC_FEATURE               = CBUUID(string: "6217FF4C-C8EC-B1FB-1380-3AD986708E2D")
+    public static let PFC_FEATURE = CBUUID(string: "6217FF4C-C8EC-B1FB-1380-3AD986708E2D")
     public static let PFC_CP      = CBUUID(string: "6217FF4D-91BB-91D0-7E2A-7CD3BDA8A1F3")
     
     var pfcEnabled: AtomicInteger!
@@ -118,7 +118,7 @@ public class BlePfcClient: BleGattClientBase{
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePfcClient.PFC_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
         automaticEnableNotificationsOnConnect(chr: BlePfcClient.PFC_CP)
-        addCharacteristicRead(PFC_FEATURE)
+        addCharacteristicRead(BlePfcClient.PFC_FEATURE)
         pfcEnabled = getNotificationCharacteristicState(BlePfcClient.PFC_CP)
     }
     
@@ -133,7 +133,7 @@ public class BlePfcClient: BleGattClientBase{
     override public func processServiceData(_ chr: CBUUID, data: Data, err: Int ){
         if(chr.isEqual(BlePfcClient.PFC_CP)){
             pfcInputQueue.push( [data: err] )
-        }else if(chr.isEqual(PFC_FEATURE)){
+        }else if(chr.isEqual(BlePfcClient.PFC_FEATURE)){
             if(err == 0){
                 pfcFeatureData.set(data)
                 RxUtils.emitNext(pfcFeatureObservers) { (observer) in
@@ -145,30 +145,18 @@ public class BlePfcClient: BleGattClientBase{
         }
     }
     
-    fileprivate func sendPfcCommandAndProcessResponse(_ observer: (RxSwift.SingleEvent<Pfc.PfcResponse>) -> (), packet: Data) {
-        do{
-            if let transport = self.gattServiceTransmitter {
-                try transport.transmitMessage(self, serviceUuid: BlePfcClient.PFC_SERVICE, characteristicUuid: BlePfcClient.PFC_CP, packet: packet, withResponse: true)
-                do{
-                    let packet = try pfcInputQueue.poll(30)
-                    if packet.first?.1 == 0 {
-                        observer(.success(Pfc.PfcResponse(data: packet.first?.0 ?? Data())))
-                    } else {
-                        observer(.failure(BleGattException.gattCharacteristicError))
-                    }
-                } catch let error {
-                    observer(.failure(error))
-                }
+    fileprivate func sendPfcCommandAndProcessResponse(packet: Data) throws -> Pfc.PfcResponse {
+        if let transport = self.gattServiceTransmitter {
+            try transport.transmitMessage(self, serviceUuid: BlePfcClient.PFC_SERVICE, characteristicUuid: BlePfcClient.PFC_CP, packet: packet, withResponse: true)
+            let packet = try pfcInputQueue.poll(30)
+            if packet.first?.1 == 0 {
+                return Pfc.PfcResponse(data: packet.first?.0 ?? Data())
             } else {
-                observer(.failure(BleGattException.gattTransportNotAvailable))
+                throw BleGattException.gattCharacteristicError
             }
-        } catch let error {
-            observer(.failure(error))
+        } else {
+            throw BleGattException.gattTransportNotAvailable
         }
-    }
-    
-    public func sendControlPointCommand(_ command: PfcMessage, value: UInt8) -> Single<Pfc.PfcResponse> {
-        return sendControlPointCommand(command, value: [value])
     }
     
     /// send a single controlpoint command
@@ -177,33 +165,63 @@ public class BlePfcClient: BleGattClientBase{
     ///   - command: @see PfcMessage for command id
     ///   - value: optional parameters if any, check spec for details
     /// - Returns: Single stream: success @see pfc.PfcResponse, error
-    public func sendControlPointCommand(_ command: PfcMessage, value: [UInt8]) -> Single<Pfc.PfcResponse> {
-        return Single.create{ observer in
-            if self.pfcEnabled.get() == self.ATT_NOTIFY_OR_INDICATE_ON {
-                switch command {
-                case .pfcRequestBroadcastSetting: fallthrough
-                case .pfcRequest5khzSetting: fallthrough
-                case .pfcRequestMultiConnectionSetting: fallthrough
-                case .pfcRequestAdaptiveTxPowerLevelSetting: fallthrough
-                case .pfcRequestAntPlusSetting:
-                    self.sendPfcCommandAndProcessResponse(observer, packet: Data([UInt8(command.rawValue)]))
-                case .pfcConfigure5khz: fallthrough
-                case .pfcConfigureBroadcast: fallthrough
-                case .pfcConfigureMultiConnection: fallthrough
-                case .pfcConfigureBleMode: fallthrough
-                case .pfcConfigureAdaptiveTxPowerLevel: fallthrough
-                case .pfcConfigureAntPlusSetting:
+    public func sendControlPointCommand(_ command: PfcMessage, value: Data?) throws -> Pfc.PfcResponse {
+        guard let transport = self.gattServiceTransmitter else {
+            throw BleGattException.gattTransportNotAvailable
+        }
+        if self.pfcEnabled.get() == self.ATT_NOTIFY_OR_INDICATE_ON {
+            switch command {
+            case .pfcRequestBroadcastSetting: fallthrough
+            case .pfcRequest5khzSetting: fallthrough
+            case .pfcRequestMultiConnectionSetting: fallthrough
+            case .pfcRequestAdaptiveTxPowerLevelSetting: fallthrough
+            case .pfcRequestAntPlusSetting:
+                return try self.sendPfcCommandAndProcessResponse(packet: Data([UInt8(command.rawValue)]))
+            case .pfcConfigure5khz: fallthrough
+            case .pfcConfigureBroadcast: fallthrough
+            case .pfcConfigureMultiConnection: fallthrough
+            case .pfcConfigureBleMode: fallthrough
+            case .pfcConfigureAdaptiveTxPowerLevel: fallthrough
+            case .pfcConfigureAntPlusSetting:
+                if let data = value {
                     var packet = Data()
                     packet.append(UInt8(command.rawValue))
-                    packet.append(contentsOf: value)
-                    self.sendPfcCommandAndProcessResponse(observer, packet: packet)
+                    packet.append(contentsOf: data)
+                    return try self.sendPfcCommandAndProcessResponse(packet: packet)
                 }
-            } else {
-                observer(.failure(BleGattException.gattCharacteristicNotifyNotEnabled))
+                throw BleGattException.gattDataError(description: "Data is nil")
             }
-            return Disposables.create {
-            }
-        }.subscribe(on: baseSerialDispatchQueue)
+        } else {
+            throw BleGattException.gattCharacteristicNotifyNotEnabled
+        }
+        
+        
+//        return Single.create{ observer in
+//            if self.pfcEnabled.get() == self.ATT_NOTIFY_OR_INDICATE_ON {
+//                switch command {
+//                case .pfcRequestBroadcastSetting: fallthrough
+//                case .pfcRequest5khzSetting: fallthrough
+//                case .pfcRequestMultiConnectionSetting: fallthrough
+//                case .pfcRequestAdaptiveTxPowerLevelSetting: fallthrough
+//                case .pfcRequestAntPlusSetting:
+//                    self.sendPfcCommandAndProcessResponse(observer, packet: Data([UInt8(command.rawValue)]))
+//                case .pfcConfigure5khz: fallthrough
+//                case .pfcConfigureBroadcast: fallthrough
+//                case .pfcConfigureMultiConnection: fallthrough
+//                case .pfcConfigureBleMode: fallthrough
+//                case .pfcConfigureAdaptiveTxPowerLevel: fallthrough
+//                case .pfcConfigureAntPlusSetting:
+//                    var packet = Data()
+//                    packet.append(UInt8(command.rawValue))
+//                    packet.append(contentsOf: value)
+//                    self.sendPfcCommandAndProcessResponse(observer, packet: packet)
+//                }
+//            } else {
+//                observer(.failure(BleGattException.gattCharacteristicNotifyNotEnabled))
+//            }
+//            return Disposables.create {
+//            }
+//        }.subscribe(on: baseSerialDispatchQueue)
     }
     
     ///
@@ -233,5 +251,36 @@ public class BlePfcClient: BleGattClientBase{
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {
         return waitNotificationEnabled(BlePfcClient.PFC_CP, checkConnection: checkConnection)
+    }
+
+    func isMultiConnectionEnabled() -> Single<PfcMultiConnectionMode> {
+        return Single.create{ [unowned self] observer in
+            do {
+                let packet = Data([PmdControlPointCommandClientToService.GET_SDK_MODE_STATUS])
+                let cpResponse = try self.sendControlPointCommand(PfcMessage.pfcRequestMultiConnectionSetting, value:packet)
+                if cpResponse.responseCode == Pfc.PfcResponse.PfcResponseCodes.success.rawValue {
+                    let byteArray = [UInt8](cpResponse.payload as Data)
+                    if cpResponse.opCode == PfcMessage.pfcRequestMultiConnectionSetting.rawValue {
+                        if let responseParameter = byteArray.first {
+                            let multiConnection = PfcMultiConnectionMode.fromResponse(multiConnectionByte: responseParameter)
+                            observer(.success(multiConnection))
+                        } else {
+                            observer(.failure(BleGattException.gattDataError(description: "Couldn't get the SDK mode status. Response parameter is missing")))
+                        }
+                    } else {
+                        observer(.failure(BleGattException.gattDataError(description: "Wrong opcode received \(cpResponse.opCode)")))
+                    }
+                } else {
+                    observer(.failure(BleGattException.gattAttributeError(errorCode: Int(cpResponse.responseCode),
+                                                                          errorDescription: cpResponse.responseCode.description)))
+                }
+            } catch let err {
+                observer(.failure(err))
+            }
+            return Disposables.create{
+                // do nothing
+            }
+        }
+        .subscribe(on: baseSerialDispatchQueue)
     }
 }

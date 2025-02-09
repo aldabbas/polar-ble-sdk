@@ -40,4 +40,12 @@ public protocol PolarSdkModeApi {
     ///   - success: emits true, if the SDK mode is currently enabled
     ///   - onError: see `PolarErrors` for possible errors invoked
     func isSDKModeEnabled(_ identifier: String) -> Single<Bool>
+
+    /// Check if Multi Connection mode currently enabled.
+    ///
+    /// - Parameter identifier: Polar device id or device address
+    /// - Returns: Single stream
+    ///   - success: emits true, if the Multi connection mode is currently enabled
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func isMultiConnectionEnabled(_ identifier: String) -> Single<Bool>
 }

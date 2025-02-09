@@ -45,7 +45,6 @@
 		6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
 		6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
 		6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
-		6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */; };
 		6C4A6A381CC0BA4E00E3AD73 /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
 		6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C57A5B31F987B40002E50DB /* BleRscClient.swift */; };
 		6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
@@ -379,6 +378,12 @@
 		AACBC9212BEB4392003A5D1B /* SDLogConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACBC91F2BEB4392003A5D1B /* SDLogConfig.swift */; };
 		AACBC92A2BEB4491003A5D1B /* sensor_data_log.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACBC9242BEB4491003A5D1B /* sensor_data_log.pb.swift */; };
 		CF7F1A25FDC78D507DA67B69 /* Pods_iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 119A850082BC99162095355C /* Pods_iOSCommunications.framework */; };
+		E09D84A52D540E4F005C2CC1 /* PfcMultiConnectionMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D84A32D540E4F005C2CC1 /* PfcMultiConnectionMode.swift */; };
+		E09D84A62D540E4F005C2CC1 /* PfcMultiConnectionMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D84A32D540E4F005C2CC1 /* PfcMultiConnectionMode.swift */; };
+		E09D84A72D540E4F005C2CC1 /* PfcMultiConnectionMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D84A32D540E4F005C2CC1 /* PfcMultiConnectionMode.swift */; };
+		E09D84A92D540E91005C2CC1 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D84A82D540E91005C2CC1 /* BlePfcClient.swift */; };
+		E09D84AA2D540E91005C2CC1 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D84A82D540E91005C2CC1 /* BlePfcClient.swift */; };
+		E09D84AB2D540E91005C2CC1 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D84A82D540E91005C2CC1 /* BlePfcClient.swift */; };
 		FFAC59B3FB168A1ACC11B265 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 /* End PBXBuildFile section */
 
@@ -431,7 +436,6 @@
 		6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleAdvertisementContent.swift; path = ble/api/model/advertisement/BleAdvertisementContent.swift; sourceTree = "<group>"; };
 		6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarHrAdvertisement.swift; path = ble/api/model/advertisement/BlePolarHrAdvertisement.swift; sourceTree = "<group>"; };
 		6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleRssiFilter.swift; path = ble/api/model/advertisement/BleRssiFilter.swift; sourceTree = "<group>"; };
-		6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePfcClient.swift; path = ble/api/model/gatt/client/BlePfcClient.swift; sourceTree = "<group>"; };
 		6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleLogger.swift; path = ble/api/BleLogger.swift; sourceTree = "<group>"; };
 		6C57A5B31F987B40002E50DB /* BleRscClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BleRscClient.swift; path = ble/api/model/gatt/client/BleRscClient.swift; sourceTree = "<group>"; };
 		6C5A448D1CB291260006220D /* BleDeviceListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDeviceListener.swift; path = ble/api/BleDeviceListener.swift; sourceTree = "<group>"; };
@@ -591,6 +595,8 @@
 		AACBC91F2BEB4392003A5D1B /* SDLogConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDLogConfig.swift; sourceTree = "<group>"; };
 		AACBC9242BEB4491003A5D1B /* sensor_data_log.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = sensor_data_log.pb.swift; sourceTree = "<group>"; };
 		B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.release.xcconfig"; sourceTree = "<group>"; };
+		E09D84A32D540E4F005C2CC1 /* PfcMultiConnectionMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PfcMultiConnectionMode.swift; sourceTree = "<group>"; };
+		E09D84A82D540E91005C2CC1 /* BlePfcClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlePfcClient.swift; sourceTree = "<group>"; };
 		EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunicationsTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -807,12 +813,13 @@
 		6C5A449A1CB291530006220D /* client */ = {
 			isa = PBXGroup;
 			children = (
+				E09D84A42D540E4F005C2CC1 /* pfc */,
 				A57D0508292254E2002824D9 /* pmd */,
 				6C8BCD351CE5BC8100A4C6A8 /* psftp */,
 				6C67C7FC1E169CCE00411498 /* BleBasClient.swift */,
 				6C67C7FD1E169CCE00411498 /* BleDisClient.swift */,
 				6C67C7FE1E169CCE00411498 /* BleHrClient.swift */,
-				6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */,
+				E09D84A82D540E91005C2CC1 /* BlePfcClient.swift */,
 				6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */,
 				6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */,
 				6C57A5B31F987B40002E50DB /* BleRscClient.swift */,
@@ -1106,6 +1113,14 @@
 				AA818E582C06F8A000D45B3C /* PolarSleepData.swift */,
 			);
 			path = sleep;
+			sourceTree = "<group>";
+		};
+		E09D84A42D540E4F005C2CC1 /* pfc */ = {
+			isa = PBXGroup;
+			children = (
+				E09D84A32D540E4F005C2CC1 /* PfcMultiConnectionMode.swift */,
+			);
+			path = pfc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1522,6 +1537,7 @@
 				A5385ABB29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
 				841A37922C808B1D009194CC /* PolarFirmwareUpdateModels.swift in Sources */,
 				841A37952C808BD9009194CC /* structures.pb.swift in Sources */,
+				E09D84A72D540E4F005C2CC1 /* PfcMultiConnectionMode.swift in Sources */,
 				6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */,
 				A5DE0957295B092700BC2E0B /* PmdRecordingType.swift in Sources */,
 				A5986D292BF7534A0014C5DF /* PolarDistanceData.swift in Sources */,
@@ -1581,9 +1597,9 @@
 				A5E5BDB8295AC26500188D55 /* OfflineRecordingError.swift in Sources */,
 				A55E08AE2A273C770059E6C7 /* BleHtsClient.swift in Sources */,
 				6C67C8001E169CCE00411498 /* BleDisClient.swift in Sources */,
+				E09D84A92D540E91005C2CC1 /* BlePfcClient.swift in Sources */,
 				6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */,
 				84D0098B2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift in Sources */,
-				6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */,
 				A57D0529292F60E3002824D9 /* AccData.swift in Sources */,
 				6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */,
 				6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */,
@@ -1597,6 +1613,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E09D84AA2D540E91005C2CC1 /* BlePfcClient.swift in Sources */,
 				A57728A727CE860600855884 /* pftp_response.pb.swift in Sources */,
 				6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */,
 				A54BC2A529DC471B003F022A /* PolarDiskSpaceData.swift in Sources */,
@@ -1606,6 +1623,7 @@
 				6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */,
 				A5A127E2273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
 				A52DB1DD2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */,
+				E09D84A62D540E4F005C2CC1 /* PfcMultiConnectionMode.swift in Sources */,
 				A57D052B292F60E3002824D9 /* AccData.swift in Sources */,
 				A5385AC129CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
 				A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */,
@@ -1778,6 +1796,7 @@
 				A5D04F3B2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */,
 				A5D04F352948AB4900CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */,
 				6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */,
+				E09D84AB2D540E91005C2CC1 /* BlePfcClient.swift in Sources */,
 				A54EC6ED29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */,
 				A5BC3EF12BF20DB5008DD743 /* PolarActivityApi.swift in Sources */,
 				A57D053029308AE6002824D9 /* TypeUtils.swift in Sources */,
@@ -1786,6 +1805,7 @@
 				A57728A427CE860600855884 /* pftp_notification.pb.swift in Sources */,
 				AA818E612C06F8C200D45B3C /* PolarSleepApi.swift in Sources */,
 				AAB386F72CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */,
+				E09D84A52D540E4F005C2CC1 /* PfcMultiConnectionMode.swift in Sources */,
 				AAB386F82CB934CF00D18313 /* PolarStoredData.swift in Sources */,
 				6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */,
 				A5743683291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */,

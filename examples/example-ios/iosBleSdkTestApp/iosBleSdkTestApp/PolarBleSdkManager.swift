@@ -1489,8 +1489,18 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
                 await getSdkModeStatus()
             }
             break
+        case .feature_polar_pfc:
+            Task { @MainActor in
+                self.pfcFeature.isSupported = true
+            }
+            Task {
+                await getPfcStatus()
+            }
+            break
+
         case .feature_polar_firmware_update:
           break
+          
         case .feature_polar_activity_data:
           break
         }

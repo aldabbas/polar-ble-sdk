@@ -46,6 +46,9 @@ public enum PolarBleSdkFeature: CaseIterable {
     /// Feature to enable or disable SDK mode blinking LED animation.
     case feature_polar_led_animation
 
+    /// Feature to read and set configuration settings in Polar device
+    case feature_polar_pfc
+
     /// Firmware update for Polar device.
     case feature_polar_firmware_update
 
@@ -409,6 +412,21 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// @param until, Data will be deleted from device from history until this date.
     /// @return [Completable] emitting success or error
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable
+
+    /// Check if Multi connected is enabled.
+    ///
+    /// - Parameters:
+    ///   - identifier: the identifier of the device to check.
+    /// - Returns: a single boolean indicating whether multi connection is enabled for a given device
+    func isMultiConnection(_ identifier: String) -> Single<Bool>
+
+    /// enable or disable multi connection on a device.
+    ///
+    /// - Parameters:
+    ///   - identifier: the identifier of the device to check.
+    ///   - enable: true to enable multi connection
+    /// - Returns [Completable] emitting success or error
+    func setMultiConnection(_ identifier: String, enable: Bool) -> Completable
 
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
